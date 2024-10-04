@@ -59,7 +59,7 @@ else
 		break
 		fi
 
-		# Wait for 10 seconds before the next iteration
+		echo "Waiting for controller pods ..."
 		sleep 10
 	done
 fi
