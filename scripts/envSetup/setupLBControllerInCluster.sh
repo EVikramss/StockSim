@@ -41,7 +41,7 @@ else
 	--set serviceAccount.create=false \
 	--set serviceAccount.name=aws-load-balancer-controller \
 	--set region=us-east-1 \
-	--set vpcId=vpc-0bf47069f2adb30f6
+	--set vpcId="$cluster_vpc_id"
 	
 	
 	#helm search repo eks/aws-load-balancer-controller --versions
