@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BASE_DIR="/home/ec2-user/deploymentFolder/buildFolder"
+BASE_DIR="/home/ec2-user/artifacts/modules"
 account_id=$(aws sts get-caller-identity --query 'Account' --output text)
 
 # Loop over each subdirectory in the base directory
