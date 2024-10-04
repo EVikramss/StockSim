@@ -1,1 +1,64 @@
-
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: alb-ingress-rules
+  annotations:
+    alb.ingress.kubernetes.io/load-balancer-name: "alb-ingress"
+    alb.ingress.kubernetes.io/ip-address-type: ipv4
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/healthcheck-protocol: HTTP
+    alb.ingress.kubernetes.io/healthcheck-port: traffic-port
+    alb.ingress.kubernetes.io/healthcheck-interval-seconds: '15'
+    alb.ingress.kubernetes.io/healthcheck-timeout-seconds: '5'
+    alb.ingress.kubernetes.io/healthy-threshold-count: '5'
+    alb.ingress.kubernetes.io/unhealthy-threshold-count: '5'
+    alb.ingress.kubernetes.io/success-codes: '200'
+spec:
+  ingressClassName: ingres-class
+  rules:
+    - http:
+         paths:
+           - path: /
+             pathType: Prefix
+             backend:
+               service:
+                 name: orderservicelb
+                 port:
+                   number: 8101
+--- 
+apiVersion: v1
+kind: Service
+metadata:
+  name: orderservicelb
+spec:
+  ports:
+    - port: 8101
+      targetPort: 8101
+      protocol: TCP
+  type: NodePort
+  selector:
+    app: orderservice
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orderservice
+  labels:
+    app: orderservice
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+     app: orderservice
+  template:
+    metadata:
+      labels:
+        app: orderservice
+    spec:
+      containers:
+        - name: orderservice
+          image: {{account_id}}.dkr.ecr.us-east-1.amazonaws.com/buildrepo:orderserver
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8101
