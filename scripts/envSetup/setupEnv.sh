@@ -42,5 +42,10 @@ then
 else
     eksctl create cluster --name DeploymentCluster --fargate --with-oidc --nodes-max 5 --enable-ssm --node-private-networking --managed --asg-access --external-dns-access --full-ecr-access --appmesh-access --alb-ingress-access
 	
+	# install application load balancer and start pods
 	./setupLBControllerInCluster.sh
+	
+	# setup kafka
+	sleep 10
+	./setupKafka.sh
 fi
