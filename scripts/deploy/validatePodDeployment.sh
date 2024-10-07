@@ -15,3 +15,4 @@ kubectl exec orderservice-58776dc58c-psfgb -c orderservice -- cat /etc/hosts
 #kubectl config get-contexts
 #kubectl config use-context arn:aws:eks:us-east-1:767397700844:cluster/DeploymentCluster2
 
+#kubectl logs kafkabroker1-7959ff9776-25fls --tail=100 -f
