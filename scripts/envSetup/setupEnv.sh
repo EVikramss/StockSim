@@ -46,6 +46,6 @@ else
 	./setupLBControllerInCluster.sh
 	
 	# setup kafka
-	sleep 10
-	./setupKafka.sh
+	# sleep 10
+	# ./setupKafka.sh
 fi
