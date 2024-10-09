@@ -170,4 +170,5 @@ spec:
           claimName: kafkaefspvc$i
 " | kubectl apply -f -
 
-done
+   done
+fi
