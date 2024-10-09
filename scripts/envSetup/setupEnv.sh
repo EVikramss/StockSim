@@ -40,7 +40,7 @@ if eksctl get cluster --name DeploymentCluster &> /dev/null
 then
     echo "DeploymentCluster already exists"
 else
-    eksctl create cluster --name DeploymentCluster --fargate --with-oidc --nodes-max 5 --enable-ssm --node-private-networking --managed --asg-access --external-dns-access --full-ecr-access --appmesh-access --alb-ingress-access
+    eksctl create cluster --name DeploymentCluster --fargate --with-oidc --enable-ssm --node-private-networking --asg-access --external-dns-access --full-ecr-access --appmesh-access --alb-ingress-access
 	
 	# install application load balancer and start pods
 	./setupLBControllerInCluster.sh
