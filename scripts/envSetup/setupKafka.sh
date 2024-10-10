@@ -25,9 +25,9 @@ else
 
 	helm repo add aws-efs-csi-driver https://kubernetes-sigs.github.io/aws-efs-csi-driver/
 	helm repo update aws-efs-csi-driver
-	# helm upgrade --install aws-efs-csi-driver --namespace kube-system aws-efs-csi-driver/aws-efs-csi-driver --set controller.serviceAccount.create=false --set controller.serviceAccount.name=csidriverrole
+	#helm upgrade --install aws-efs-csi-driver --namespace kube-system aws-efs-csi-driver/aws-efs-csi-driver --set controller.serviceAccount.create=false --set controller.serviceAccount.name=csidriverrole
 
-	kubectl apply -k "github.com/kubernetes-sigs/aws-efs-csi-driver/deploy/kubernetes/overlays/stable/ecr/?ref=release-1.3"
+	kubectl apply -k "github.com/kubernetes-sigs/aws-efs-csi-driver/deploy/kubernetes/overlays/stable/ecr/?ref=release-2.0"
 	
 	while true; do
 		output=$(kubectl get pods -n kube-system -l app=efs-csi-node|grep efs-csi-node|head -n 1|awk '{print $2}')
@@ -43,23 +43,42 @@ else
 
 	# create efs file system
 	WOF_EFS_FS_ID=$(aws efs create-file-system --creation-token kakfaFS --performance-mode generalPurpose --throughput-mode bursting --tags Key=Name,Value=kakfaFS --output text  --query "FileSystemId")
+	echo "WOF_EFS_FS_ID"
+	echo "$WOF_EFS_FS_ID"
+	
+	# wait for file system to be in available state
+	while true; do
+		output=$(aws efs describe-file-systems --file-system-id $WOF_EFS_FS_ID --query "FileSystems[0].LifeCycleState" --output text)
 		
+		if [ "$output" = "available" ]; then
+			echo 'efs available'
+		break
+		fi
+
+		echo "Waiting for efs ..."
+		sleep 10
+	done
+	
 	# add security group and add ingress rule (required for in vpc access ?)
 	WOF_EFS_SG_ID=$(aws ec2 create-security-group --description kakfaFS --group-name kakfaFS --vpc-id $cluster_vpc_id --query 'GroupId' --output text)
+	echo "WOF_EFS_SG_ID"
+	echo "$WOF_EFS_SG_ID"
   
 	aws ec2 authorize-security-group-ingress --group-id $WOF_EFS_SG_ID --protocol tcp --port 2049 --cidr $cluster_vpc_cider_block
 		
 	# add mount points on all subnets in VPC
 	for subnet_id in $cluster_vpc_subnets; do (aws efs create-mount-target --file-system-id $WOF_EFS_FS_ID --subnet-id $subnet_id --security-group $WOF_EFS_SG_ID); done
 		
-	for i in {1..no_of_kafka_brokers}
-	do
+	for i in $(seq 1 $no_of_kafka_brokers); do
 		echo "Creating kafka profile, access point, PVC $i"
 		
 		aws eks create-fargate-profile --cluster-name DeploymentCluster --fargate-profile-name kakfaBroker$i --pod-execution-role-arn arn:aws:iam::"$account_id":role/eks-fargate-role --selectors namespace=kakfabroker$i,labels={app=kakfaBroker$i}
 		
 		# create access point
 		WOF_EFS_AP=$(aws efs create-access-point --file-system-id $WOF_EFS_FS_ID --posix-user Uid=1000,Gid=1000 --root-directory "Path=/kafkaDir$i,CreationInfo={OwnerUid=1000,OwnerGid=1000,Permissions=777}" --query 'AccessPointId' --output text)
+		
+		echo "WOF_EFS_AP"
+		echo "$WOF_EFS_AP"
 	
 # create pcv inline
 echo "
@@ -106,19 +125,17 @@ spec:
       storage: 8Gi   
 " | kubectl apply -f -
 
-	sleep 40
-	#while true; do
-	#	output=$(kubectl get pv -w|grep kafkaefspv$i|awk '{print $5}')
-	#	
-	#	if [ "$output" = "Bound" ]; then
-	#		echo 'persistent volumes bound'
-	#	break
-	#	fi
-	#
-	#	echo "Waiting for persistent volume ..."
-	#	sleep 10
-	#done
-
+	while true; do
+		output=$(kubectl get pv |grep kafkaefspv$i|awk '{print $5}')
+		
+		if [ "$output" = "Bound" ]; then
+			echo 'persistent volumes bound'
+		break
+		fi
+	
+		echo "Waiting for persistent volume ..."
+		sleep 10
+	done
 
 
 echo "apiVersion: apps/v1
@@ -170,5 +187,5 @@ spec:
           claimName: kafkaefspvc$i
 " | kubectl apply -f -
 
-   done
+done
 fi
