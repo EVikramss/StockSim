@@ -72,6 +72,7 @@ public class SetupEnv extends Stack {
 		commandList.add("sudo yum install -y java");
 		commandList.add("sudo yum install -y docker");
 		commandList.add("sudo yum install -y git");
+		commandList.add("sudo yum install -y maven");
 		commandList.add("sudo service docker start");
 		commandList.add("sudo usermod -a -G docker ec2-user");
 		commandList.add("sudo amazon-linux-extras install -y epel");
