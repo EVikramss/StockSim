@@ -15,4 +15,13 @@ kubectl exec orderservice-58776dc58c-psfgb -c orderservice -- cat /etc/hosts
 #kubectl config get-contexts
 #kubectl config use-context arn:aws:eks:us-east-1:767397700844:cluster/DeploymentCluster2
 
-#kubectl logs kafkabroker1-7959ff9776-25fls --tail=100 -f
+kubectl logs orderservice-6dfd588fc4-2v5st --tail=100 -f
+kubectl logs kafkabroker2-856f97f94b-6jrch --tail=100 -f
+
+kubectl exec -it orderservice-574854d4b-2dwpc -- /bin/sh
+kubectl get pod kafkabroker1-549b85bb49-sgtz9 -n default --template="{{.status.podIP}}"
+nslookup kafkabrokersvc1.default.svc.cluster.local
+dig kafkabroker1.default.pod.cluster.local
+
+kubectl get configmap coredns -n kube-system -o yaml
+kubectl get svc --all-namespaces

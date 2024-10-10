@@ -39,13 +39,15 @@ fi
 if eksctl get cluster --name DeploymentCluster &> /dev/null
 then
     echo "DeploymentCluster already exists"
-else
-    eksctl create cluster --name DeploymentCluster --fargate --with-oidc --enable-ssm --node-private-networking --asg-access --external-dns-access --full-ecr-access --appmesh-access --alb-ingress-access
+else	
+	eksctl create cluster --name DeploymentCluster --fargate --with-oidc --nodes-max 1 --enable-ssm --node-private-networking --managed --asg-access --external-dns-access --full-ecr-access --appmesh-access --alb-ingress-access --nodegroup-name t3-medium-nodes --node-type t3.medium --nodes 1 --nodes-min 1
+	
+	# eksctl create nodegroup --cluster DeploymentCluster --name NG1 --node-type t3.medium --nodes 1
 	
 	# install application load balancer and start pods
 	./setupLBControllerInCluster.sh
 	
 	# setup kafka
-	# sleep 10
-	# ./setupKafka.sh
+	sleep 10
+	./setupKafka.sh
 fi
