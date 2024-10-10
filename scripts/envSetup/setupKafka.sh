@@ -227,12 +227,6 @@ spec:
             value: 'PLAINTEXT'
           - name: KAFKA_KRAFT_CLUSTER_ID
             value: '$kafka_uuid'
-          - name: KAFKA_TLS_CLIENT_AUTH
-            value: 'none'
-          - name: KAFKA_CFG_SASL_MECHANISM_CONTROLLER_PROTOCOL
-            value: 'PLAIN'
-          - name: ALLOW_PLAINTEXT_LISTENER
-            value: 'yes'
       volumes:
       - name: efs-storage
         persistentVolumeClaim:
