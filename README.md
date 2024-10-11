@@ -31,7 +31,7 @@ Prerequisites: aws cli, nodejs 22.5.1, aws cdk
 11) Wait for LB to provision in LoadBalancers(EC2) screen. Access http://LBDNS from browser.
 
 Note: 
-A) In case of errors during setup 'couldn't get current server API group list: ... no kind "ExecCredential" is registered for version "client.authentication.k8s.io/v1alpha1" ', kill the script (ps -ef|grep setup and use kill cmd) and check the aws version is updated correctly (aws --version)
+A) In case of errors during setup 'couldn't get current server API group list: ... no kind "ExecCredential" is registered for version "client.authentication.k8s.io/v1alpha1" ', kill the script (ps -ef|grep setup and use kill cmd) and check that aws version is updated correctly (aws --version)
 B) Mounting EFS onto kafka broker nodes might take some time, if still in container creating status for more than 5 min, run below command
 	kubectl apply -k "github.com/kubernetes-sigs/aws-efs-csi-driver/deploy/kubernetes/overlays/stable/ecr/?ref=release-2.0"
 	
