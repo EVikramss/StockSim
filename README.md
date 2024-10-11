@@ -1,5 +1,6 @@
 
 
+
 Prerequisites: aws cli, nodejs 22.5.1, aws cdk
 
 1) Download the awscdk project & unzip it
@@ -10,7 +11,7 @@ Prerequisites: aws cli, nodejs 22.5.1, aws cdk
 	a) cdk bootstrap
 	b) cdk deploy (enter y when prompted - deployment should complete within 3 minutes) or 
 	c) cdk synth - to get the cloudformation template for review and manual creation.
-6) Once deployment is complete, login to the ec2 instance (BuildBox) from aws console once instance is accessible
+6) Once deployment is complete, login to the ec2 instance (BuildBox) from aws console when instance status shows as checks passed.
 7) Navigate to '/home/ec2-user/artifacts/scripts/envSetup' and run 'aws configure' to setup access keys. Then run 'nohup ./setupEnv.sh &'
 	Note: In case artifacts folder is not present, follow below steps to set it up (replace aws_account_id with the aws account id value)
 		cd /home/ec2-user
@@ -28,3 +29,9 @@ Prerequisites: aws cli, nodejs 22.5.1, aws cdk
 9) Once build is complete, navigate to '/home/ec2-user/artifacts/scripts/deploy' and run 'dockerImageBuildScript.sh'
 10) Run 'kubectl describe ingress/alb-ingress-rules' to check load balancer status.
 11) Wait for LB to provision in LoadBalancers(EC2) screen. Access http://LBDNS from browser.
+
+Note: 
+A) In case of errors during setup 'couldn't get current server API group list: ... no kind "ExecCredential" is registered for version "client.authentication.k8s.io/v1alpha1" ', kill the script (ps -ef|grep setup and use kill cmd) and check the aws version is updated correctly (aws --version)
+B) Mounting EFS onto kafka broker nodes might take some time, if still in container creating status for more than 5 min, run below command
+	kubectl apply -k "github.com/kubernetes-sigs/aws-efs-csi-driver/deploy/kubernetes/overlays/stable/ecr/?ref=release-2.0"
+	

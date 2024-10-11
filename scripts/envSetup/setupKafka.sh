@@ -227,6 +227,12 @@ spec:
             value: 'PLAINTEXT'
           - name: KAFKA_KRAFT_CLUSTER_ID
             value: '$kafka_uuid'
+          - name: KAFKA_TLS_CLIENT_AUTH
+            value: 'none'
+          - name: KAFKA_CFG_SASL_MECHANISM_CONTROLLER_PROTOCOL
+            value: 'PLAIN'
+          - name: ALLOW_PLAINTEXT_LISTENER
+            value: 'yes'
       volumes:
       - name: efs-storage
         persistentVolumeClaim:
@@ -259,5 +265,8 @@ done
 
 #dig kafkaheadlesssvc.default.svc.cluster.local
 
+sleep 60
+# Pods are getting stuck in efs mount failed. Reapplying here seems to solve the issue
+kubectl apply -k "github.com/kubernetes-sigs/aws-efs-csi-driver/deploy/kubernetes/overlays/stable/ecr/?ref=release-2.0"
 
 fi

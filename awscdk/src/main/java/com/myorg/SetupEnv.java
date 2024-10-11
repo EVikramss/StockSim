@@ -34,8 +34,6 @@ import software.amazon.awscdk.services.iam.PolicyDocument;
 import software.amazon.awscdk.services.iam.PolicyStatement;
 import software.amazon.awscdk.services.iam.Role;
 import software.amazon.awscdk.services.iam.ServicePrincipal;
-import software.amazon.awscdk.services.s3.Bucket;
-import software.amazon.awscdk.services.s3.IBucket;
 import software.constructs.Construct;
 
 public class SetupEnv extends Stack {
@@ -69,15 +67,6 @@ public class SetupEnv extends Stack {
 		// commands to run on instance startup - install java, docker, 7zip and add
 		// perms.
 		UserData userData = UserData.forLinux();
-		commandList.add("sudo yum install -y java");
-		commandList.add("sudo yum install -y docker");
-		commandList.add("sudo yum install -y git");
-		commandList.add("sudo yum install -y maven");
-		commandList.add("sudo service docker start");
-		commandList.add("sudo usermod -a -G docker ec2-user");
-		commandList.add("sudo amazon-linux-extras install -y epel");
-		commandList.add("sudo yum install p7zip -y");
-		commandList.add("sudo ln -s /usr/bin/7za /usr/bin/7z");
 
 		// Create role for ec2 box
 		Role ec2Role = Role.Builder.create(this, "ec2BuildBoxRole").roleName("ec2BuildBoxRole")
@@ -92,15 +81,7 @@ public class SetupEnv extends Stack {
 		repository.grantPullPush(ec2Role);
 
 		// commands to download and setup artifacts
-		commandList.add("cd /home/ec2-user");
-		commandList.add("wget https://github.com/EVikramss/StockSim/archive/refs/heads/main.zip");
-		commandList.add("unzip -qq main.zip");
-		commandList.add("mv StockSim-main/ artifacts");
-		commandList.add("chmod -R 777 artifacts");
-		String accountID = envMap.get("accountID");
-		commandList.add(
-				"find /home/ec2-user/artifacts/scripts/deploy/. -type f -name \"*.yaml\" -exec sed -i 's/{{account_id}}/"
-						+ accountID + "/g' {} \\;");
+		setEC2CommandList(envMap, commandList);
 
 		// grant eks related perms
 		ec2Role.addToPolicy(
@@ -144,5 +125,31 @@ public class SetupEnv extends Stack {
 		eksFargateRole.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName("AmazonEC2ContainerRegistryReadOnly"));
 		eksFargateRole
 				.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName("AmazonEKSFargatePodExecutionRolePolicy"));
+	}
+
+	private void setEC2CommandList(Map<String, String> envMap, List<String> commandList) {
+		
+		// install java, docker, 7zip & git
+		commandList.add("sudo yum install -y java");
+		commandList.add("sudo yum install -y docker");
+		commandList.add("sudo yum install -y git");
+		commandList.add("sudo service docker start");
+		commandList.add("sudo usermod -a -G docker ec2-user");
+		commandList.add("sudo amazon-linux-extras install -y epel");
+		commandList.add("sudo yum install p7zip -y");
+		commandList.add("sudo ln -s /usr/bin/7za /usr/bin/7z");
+		
+		// install maven
+		commandList.add("cd /home/ec2-user");
+		commandList.add("wget https://archive.apache.org/dist/maven/maven-3/3.9.4/binaries/apache-maven-3.9.4-bin.tar.gz");
+		commandList.add("tar -zxf apache-maven-3.9.4-bin.tar.gz");
+		
+		// download artifacts & setup folders
+		commandList.add("git clone https://github.com/EVikramss/StockSim.git");
+		commandList.add("chmod -R 777 StockSim");
+		String accountID = envMap.get("accountID");
+		commandList.add(
+				"find /home/ec2-user/StockSim/scripts/deploy/. -type f -name \"*.yaml\" -exec sed -i 's/{{account_id}}/"
+						+ accountID + "/g' {} \\;");
 	}
 }
