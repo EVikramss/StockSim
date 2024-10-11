@@ -1,6 +1,10 @@
 #!/bin/bash
-aws configure
+#run aws configure before invoking script
 account_id=$(aws sts get-caller-identity --query 'Account' --output text)
+if [ -z "$account_id" ]; then
+    echo "run awa configure"
+    exit
+fi
 
 # if version diff
 current_version=$(aws --version 2>&1)
