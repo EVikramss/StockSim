@@ -11,7 +11,7 @@ Prerequisites: aws cli, nodejs 22.5.1, aws cdk
 	b) cdk deploy (enter y when prompted - deployment should complete within 3 minutes) or 
 	c) cdk synth - to get the cloudformation template for review and manual creation.
 6) Once deployment is complete, login to the ec2 instance (BuildBox) from aws console once instance is accessible
-7) Navigate to '/home/ec2-user/artifacts/scripts/envSetup' and run 'setupEnv.sh'
+7) Navigate to '/home/ec2-user/artifacts/scripts/envSetup' and run 'aws configure' to setup access keys. Then run 'nohup ./setupEnv.sh &'
 	Note: In case artifacts folder is not present, follow below steps to set it up (replace aws_account_id with the aws account id value)
 		cd /home/ec2-user
 		wget https://github.com/EVikramss/StockSim/archive/refs/heads/main.zip
