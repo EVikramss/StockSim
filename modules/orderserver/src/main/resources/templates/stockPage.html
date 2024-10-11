@@ -1,0 +1,76 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<title th:text="${stockName}">Stock Details</title>
+</head>
+<body ng-app="stockDetail" ng-controller="stockDetailController">
+
+	<p th:text="${stockName}" id="stockName" hidden></p>
+	<p th:text="${day}" id="day" hidden></p>
+
+	<table>
+		<tr>
+			<td><p>Select Current Time</p></td>
+			<td><select ng-model="selectedHour"
+				ng-options="hour for hour in hourRange"
+				ng-change="redrawGraphForTimeChange()"></select></td>
+			<td><select ng-model="selectedMinute"
+				ng-options="minute for minute in minuteRange"
+				ng-change="redrawGraphForTimeChange()"></select></td>
+		</tr>
+	</table>
+
+	<table>
+		<tr>
+			<td><canvas id="stockGraph" height="600" width="600"></canvas></td>
+			<td>
+				<table>
+					<tr>
+						<td>
+							<table
+								style="width: 100%; border: 1px solid black; border-radius: 10px"
+								id="buyTable">
+								<tr>
+									<td><p>Buy</p></td>
+									<td><select
+										ng-options="order as order.orderType for order in buyOrderTypes"
+										ng-model="selectedBuyType" ng-change="showBuyTypeOptions()"></select></td>
+									<td ng-if="buyOptionSelected">
+										<table>
+											<tr ng-repeat="field in selectedBuyType.fields">
+												<td><input type="text" placeholder="{{field}}"
+													ng-model="selectedBuyType.values[$index]"></input></td>
+											</tr>
+										</table>
+									</td>
+									<td><button type="text" ng-disabled="!buyOptionSelected" ng-click="submitBuyOrder()">Place
+											Buy Order</button> </input></td>
+									<td ng-if="submitBuyMsg"><span ng-bind="submitBuyMsg"></span></td>
+								</tr>
+							</table>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<table
+								style="width: 100%; border: 1px solid black; border-radius: 10px"
+								id="sellTable">
+								<tr>
+									<td><p>Sell</p></td>
+								</tr>
+							</table>
+						</td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+	</table>
+
+	<script type="text/javascript" src="/js/lib/angularjs/angular.min.js"></script>
+	<script type="text/javascript"
+		src="/js/lib/angularjs/angular-route.min.js"></script>
+	<script type="text/javascript" src="/js/lib/chartjs/chart.js"></script>
+	<script type="text/javascript"
+		src="./js/orderui/stockDetailsController.js"></script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>List of stocks</title>
+</head>
+<body ng-app="indexApp" ng-controller="indexController">
+
+	<table>
+		<tr>
+			<th><span>Stocks</span></th>
+			<th ng-if="stockDaysList">Stock Day Select</th>
+			<th ng-if="stockDaysList"></th>
+		</tr>
+		<tr ng-repeat="stock in listedStocks">
+			<td><a href="#"
+				ng-click="showListedDaysForStock(stock);selectStockDtls.name=stock"><span
+					ng-bind="stock"></span></a></td>
+			<td ng-if="stockDaysList"><select ng-model="selectStockDtls.day"
+				ng-if="stock==selectedStock">
+					<option ng-repeat="day in stockDaysList" value="{{day}}"
+						ng-click="setSelectedDay(day)">{{day.substr(0, 4) + '-' +
+						day.substr(4, 2) + '-' + day.substr(6, 2)}}</option>
+			</select></td>
+			<td ng-if="stockDaysList"><a ng-if="stock==selectedStock && selectStockDtls.day"
+				ng-href="/stockPage?name={{selectStockDtls.name}}&day={{selectStockDtls.day}}"><button>Show
+						Stock Page</button></a></td>
+		</tr>
+	</table>
+
+	<script type="text/javascript" src="/js/lib/angularjs/angular.min.js"></script>
+	<script type="text/javascript"
+		src="/js/lib/angularjs/angular-route.min.js"></script>
+	<script type="text/javascript" src="./js/orderui/indexController.js"></script>
+</body>
+</html>
