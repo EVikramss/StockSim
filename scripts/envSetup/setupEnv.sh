@@ -1,7 +1,7 @@
 #!/bin/bash
 #run aws configure before invoking script
 account_id=$(aws sts get-caller-identity --query 'Account' --output text)
-if [ -z "$account_id" ]; then
+if [ -z "$HOME/.aws/credentials" ]; then
     echo "run aws configure"
     exit
 fi
