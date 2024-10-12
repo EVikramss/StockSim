@@ -1,10 +1,6 @@
 #!/bin/bash
-#run aws configure before invoking script
+aws configure
 account_id=$(aws sts get-caller-identity --query 'Account' --output text)
-if [ ! -f "$HOME/.aws/credentials" ]; then
-    echo "run aws configure"
-    exit
-fi
 
 # if version diff
 current_version=$(aws --version 2>&1)
@@ -47,6 +43,7 @@ else
 	eksctl create cluster --name DeploymentCluster --fargate --with-oidc --nodes-max 1 --enable-ssm --node-private-networking --managed --asg-access --external-dns-access --full-ecr-access --appmesh-access --alb-ingress-access --nodegroup-name t3-medium-nodes --node-type t3.medium --nodes 1 --nodes-min 1
 	
 	# eksctl create nodegroup --cluster DeploymentCluster --name NG1 --node-type t3.medium --nodes 1
+	kubectl get deployment -n kube-system aws-load-balancer-controller
 	
 	# install application load balancer and start pods
 	./setupLBControllerInCluster.sh
@@ -54,4 +51,7 @@ else
 	# setup kafka
 	sleep 10
 	./setupKafka.sh
+	
+	sleep 20
+	./setupDBConnection.sh
 fi

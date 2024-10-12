@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import software.amazon.awscdk.SecretValue;
 import software.amazon.awscdk.Size;
 import software.amazon.awscdk.Stack;
 import software.amazon.awscdk.StackProps;
@@ -23,6 +24,8 @@ import software.amazon.awscdk.services.ec2.Peer;
 import software.amazon.awscdk.services.ec2.Port;
 import software.amazon.awscdk.services.ec2.SecurityGroup;
 import software.amazon.awscdk.services.ec2.SecurityGroupProps;
+import software.amazon.awscdk.services.ec2.SubnetSelection;
+import software.amazon.awscdk.services.ec2.SubnetType;
 import software.amazon.awscdk.services.ec2.UserData;
 import software.amazon.awscdk.services.ec2.Volume;
 import software.amazon.awscdk.services.ec2.Vpc;
@@ -34,6 +37,17 @@ import software.amazon.awscdk.services.iam.PolicyDocument;
 import software.amazon.awscdk.services.iam.PolicyStatement;
 import software.amazon.awscdk.services.iam.Role;
 import software.amazon.awscdk.services.iam.ServicePrincipal;
+import software.amazon.awscdk.services.rds.Credentials;
+import software.amazon.awscdk.services.rds.DatabaseInstance;
+import software.amazon.awscdk.services.rds.DatabaseInstanceEngine;
+import software.amazon.awscdk.services.rds.IInstanceEngine;
+import software.amazon.awscdk.services.rds.ParameterGroup;
+import software.amazon.awscdk.services.rds.ParameterGroupProps;
+import software.amazon.awscdk.services.rds.PostgresEngineVersion;
+import software.amazon.awscdk.services.rds.PostgresInstanceEngineProps;
+import software.amazon.awscdk.services.secretsmanager.Secret;
+import software.amazon.awscdk.services.ssm.StringParameter;
+import software.amazon.awscdk.services.ssm.StringParameterProps;
 import software.constructs.Construct;
 
 public class SetupEnv extends Stack {
@@ -125,10 +139,38 @@ public class SetupEnv extends Stack {
 		eksFargateRole.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName("AmazonEC2ContainerRegistryReadOnly"));
 		eksFargateRole
 				.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName("AmazonEKSFargatePodExecutionRolePolicy"));
+
+		// create DB
+		PostgresInstanceEngineProps dbProps = PostgresInstanceEngineProps.builder()
+				.version(PostgresEngineVersion.VER_16_2).build();
+		IInstanceEngine engine = DatabaseInstanceEngine.postgres(dbProps);
+
+		ParameterGroup pg = new ParameterGroup(this, "rdspg", ParameterGroupProps.builder().engine(engine).build());
+		// pg.addParameter("rds.force_ssl", "0");
+
+		SecurityGroup sg = new SecurityGroup(this, "dbSecurityGroup", SecurityGroupProps.builder().vpc(vpcRef)
+				// .allowAllOutbound(true)
+				.build());
+		// sg.addIngressRule(Peer.anyIpv4(), Port.allTraffic());
+		List<SecurityGroup> sgList = new ArrayList<SecurityGroup>();
+		sgList.add(sg);
+
+		// username is postgres, password is password
+		DatabaseInstance instance = DatabaseInstance.Builder.create(this, "rdsdb").databaseName("rdsdb").engine(engine)
+				.parameterGroup(pg).instanceType(InstanceType.of(InstanceClass.BURSTABLE3, InstanceSize.SMALL))
+				.credentials(Credentials.fromPassword("postgres", new SecretValue("password"))).vpc(vpcRef)
+				.securityGroups(sgList).vpcSubnets(SubnetSelection.builder().subnetType(SubnetType.PUBLIC).build())
+				.preferredBackupWindow("01:00-02:00").build();
+
+		Secret dbCreds = Secret.Builder.create(this, "test/postgres/creds")
+				.secretStringValue(SecretValue.unsafePlainText("{\"username\":\"postgres\",\"password\":\"password\","
+						+ "\"host\":\"" + instance.getDbInstanceEndpointAddress() + "\"," + "\"port\":\""
+						+ instance.getDbInstanceEndpointPort() + "\"," + "\"dbInstanceIdentifier\":\"db\"}"))
+				.secretName("test/postgres/creds").build();
 	}
 
 	private void setEC2CommandList(Map<String, String> envMap, List<String> commandList) {
-		
+
 		// install java, docker, 7zip & git
 		commandList.add("sudo yum install -y java");
 		commandList.add("sudo yum install -y docker");
@@ -138,12 +180,13 @@ public class SetupEnv extends Stack {
 		commandList.add("sudo amazon-linux-extras install -y epel");
 		commandList.add("sudo yum install p7zip -y");
 		commandList.add("sudo ln -s /usr/bin/7za /usr/bin/7z");
-		
+
 		// install maven
 		commandList.add("cd /home/ec2-user");
-		commandList.add("wget https://archive.apache.org/dist/maven/maven-3/3.9.4/binaries/apache-maven-3.9.4-bin.tar.gz");
+		commandList
+				.add("wget https://archive.apache.org/dist/maven/maven-3/3.9.4/binaries/apache-maven-3.9.4-bin.tar.gz");
 		commandList.add("tar -zxf apache-maven-3.9.4-bin.tar.gz");
-		
+
 		// download artifacts & setup folders
 		commandList.add("git clone https://github.com/EVikramss/StockSim.git");
 		commandList.add("chmod -R 777 StockSim");
