@@ -1,10 +1,16 @@
 #!/bin/bash
 
 # setup env
-envSetup/setupEnv.sh
+cd envSetup
+./setupEnv.sh
+cd ..
 
 # build modules
-build/dockerImageBuildScript.sh
+cd build
+./dockerImageBuildScript.sh
+cd ..
 
 # deploy
-deploy/dockerImageDeployScript.sh
+cd deploy
+./dockerImageDeployScript.sh
+cd ..
