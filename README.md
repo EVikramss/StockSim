@@ -16,7 +16,7 @@ This step creates a t2.micro ec2 instance with code artifacts and a postgres db.
 
 4) Once deployment is complete, login to the ec2 instance (BuildBox) from aws console when instance status shows as checks passed.
    
-5) Navigate to '/home/ec2-user/artifacts/scripts' and run 'aws configure' to setup access keys. Then run 'nohup ./envsetupBuildAndDeploy.sh &'
+5) Navigate to '/home/ec2-user/artifacts/scripts' and run 'aws configure' to setup access keys. Then run 'nohup ./createEnvBuildAndDeploy.sh &'
 	
 	The script sets up the EKS cluster, kafka pods and DB connections. It also builds and deploys the application along with internet facing load balancer. The entire process takes around 50 minutes.
 
