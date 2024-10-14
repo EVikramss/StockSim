@@ -146,10 +146,9 @@ public class SetupEnv extends Stack {
 		IInstanceEngine engine = DatabaseInstanceEngine.postgres(dbProps);
 
 		ParameterGroup pg = new ParameterGroup(this, "rdspg", ParameterGroupProps.builder().engine(engine).build());
-		// pg.addParameter("rds.force_ssl", "0");
+		pg.addParameter("rds.force_ssl", "0");
 
 		SecurityGroup sg = new SecurityGroup(this, "dbSecurityGroup", SecurityGroupProps.builder().vpc(vpcRef)
-				// .allowAllOutbound(true)
 				.build());
 		// sg.addIngressRule(Peer.anyIpv4(), Port.allTraffic());
 		List<SecurityGroup> sgList = new ArrayList<SecurityGroup>();
