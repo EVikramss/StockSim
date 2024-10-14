@@ -27,12 +27,13 @@ else
 				echo 'provide acceptance'
 			break
 			fi
-
+		
 			echo "Waiting for peering connection ..."
 			sleep 10
 		done
+		sleep 60
 
-		acceptance=(aws ec2 accept-vpc-peering-connection --vpc-peering-connection-id $vpcPeeringConnectionId --output text)
+		acceptance=$(aws ec2 accept-vpc-peering-connection --vpc-peering-connection-id $vpcPeeringConnectionId --output text)
 
 		while true; do
 			output=$(aws ec2 describe-vpc-peering-connections --vpc-peering-connection-ids $vpcPeeringConnectionId --query "VpcPeeringConnections[0].Status.Code" --output text)
@@ -57,6 +58,7 @@ else
 			
 			# add security group 
 			aws ec2 authorize-security-group-ingress --group-id ${rdc_vpc_security_group_id} --protocol tcp --port $rdc_port --cidr $cluster_vpc_cider_block
+			aws ec2 authorize-security-group-egress --group-id ${rdc_vpc_security_group_id} --protocol tcp --port $rdc_port --cidr $cluster_vpc_cider_block
 			
 echo "
 apiVersion: v1
