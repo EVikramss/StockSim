@@ -1,5 +1,11 @@
 #!/bin/bash
-aws configure
+#aws configure
+
+if [ ! -f "$HOME/.aws/credentials" ]; then
+    echo "run aws configure"
+    exit
+fi
+
 account_id=$(aws sts get-caller-identity --query 'Account' --output text)
 
 # if version diff
