@@ -12,7 +12,7 @@ Prerequisites: aws cli, nodejs 22.5.1, aws cdk
 	b) cdk deploy (enter y when prompted - deployment should complete within 10 minutes) or 
 	c) cdk synth - to get the cloudformation template for review and manual creation.
 
-This step creates a t2.micro ec2 instance with code artifacts and a postgres db.
+    This step creates a t2.micro ec2     instance with code artifacts and a     postgres db.
 
 4) Once deployment is complete, login to the ec2 instance (BuildBox) from aws console when instance status shows as checks passed.
    
