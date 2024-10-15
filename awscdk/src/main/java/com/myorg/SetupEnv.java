@@ -148,15 +148,17 @@ public class SetupEnv extends Stack {
 		ParameterGroup pg = new ParameterGroup(this, "rdspg", ParameterGroupProps.builder().engine(engine).build());
 		pg.addParameter("rds.force_ssl", "0");
 
-		SecurityGroup sg = new SecurityGroup(this, "dbSecurityGroup", SecurityGroupProps.builder().vpc(vpcRef)
-				.build());
+		SecurityGroup sg = new SecurityGroup(this, "dbSecurityGroup", SecurityGroupProps.builder().vpc(vpcRef).build());
 		// sg.addIngressRule(Peer.anyIpv4(), Port.allTraffic());
 		List<SecurityGroup> sgList = new ArrayList<SecurityGroup>();
 		sgList.add(sg);
 
 		// username is postgres, password is password
+		// set publiclyAccessible as false so that coreDNS(via route 53) can resolve the
+		// rds endpoint to private ip (and route via vpc peering as per route table entry) instead of public IP
 		DatabaseInstance instance = DatabaseInstance.Builder.create(this, "rdsdb").databaseName("rdsdb").engine(engine)
 				.parameterGroup(pg).instanceType(InstanceType.of(InstanceClass.BURSTABLE3, InstanceSize.SMALL))
+				.publiclyAccessible(false)
 				.credentials(Credentials.fromPassword("postgres", new SecretValue("password"))).vpc(vpcRef)
 				.securityGroups(sgList).vpcSubnets(SubnetSelection.builder().subnetType(SubnetType.PUBLIC).build())
 				.preferredBackupWindow("01:00-02:00").build();
