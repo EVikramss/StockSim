@@ -48,13 +48,14 @@ else
 		done
 		
 		rdc_route_table_id=$(aws ec2 describe-route-tables --filters "Name=vpc-id,Values=$rds_vpc_id" --query "RouteTables[0].RouteTableId" --output text)
-		cluster_route_table_id=$(aws ec2 describe-route-tables --filters "Name=vpc-id,Values=$cluster_vpc_id" --query "RouteTables[0].RouteTableId" --output text)
+		cluster_route_table_id_arr=$(aws ec2 describe-route-tables --filters "Name=vpc-id,Values=$cluster_vpc_id" --query "RouteTables[].RouteTableId" --output text)
 
 		if [ -z "$rdc_route_table_id" ] && [ -z "$cluster_route_table_id" ]; then
 			echo "Unable to fetch route tables"
 		else
 			aws ec2 create-route --route-table-id $rdc_route_table_id --destination-cidr-block $cluster_vpc_cider_block --vpc-peering-connection-id $vpcPeeringConnectionId
-			aws ec2 create-route --route-table-id $cluster_route_table_id --destination-cidr-block $rdc_vpc_cider_block --vpc-peering-connection-id $vpcPeeringConnectionId
+			for cluster_route_table_id in $cluster_route_table_id_arr; do (aws ec2 create-route --route-table-id $cluster_route_table_id --destination-cidr-block $rdc_vpc_cider_block --vpc-peering-connection-id $vpcPeeringConnectionId); done
+			
 			
 			# add security group 
 			aws ec2 authorize-security-group-ingress --group-id ${rdc_vpc_security_group_id} --protocol tcp --port $rdc_port --cidr $cluster_vpc_cider_block

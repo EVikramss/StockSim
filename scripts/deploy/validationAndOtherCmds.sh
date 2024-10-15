@@ -16,8 +16,8 @@ curl http://localhost:5101
 kubectl get pod orderservice-58776dc58c-psfgb -o jsonpath='{.spec.containers[*].name}'
 
 # run commands on pod
-kubectl exec orderservice-58776dc58c-psfgb -c orderservice -- cat /etc/hosts
-kubectl exec -it orderservice-574854d4b-2dwpc -- /bin/sh
+kubectl exec orderservice-69847c86dc-dh5k4 -c orderservice -- cat /etc/hosts
+kubectl exec -it orderservice-7848446467-tmdsb -- /bin/sh
 
 #kubectl config get-contexts
 #kubectl config use-context arn:aws:eks:us-east-1:767397700844:cluster/DeploymentCluster2
@@ -45,3 +45,6 @@ kubectl run -i --tty --rm debug --image=busybox --restart=Never -- sh
 
 # rollout restart deployments
 kubectl rollout restart deployment orderservic
+
+# scale deployments
+kubectl scale deployment my-app --replicas=5
